@@ -3,8 +3,8 @@ import { useTheme } from '../context/ThemeContext';
 import { MediaMTXAPI } from '../services/mediamtx-api';
 import { RTMPConnection } from '../types/mediamtx-types';
 import { handleApiError, getUserFriendlyErrorMessage } from '../utils/error-handler';
-import { formatDate, getTimeSince } from '../utils/date';
-import { formatBytes } from '../utils/format';
+import { formatDate, getTimeSince } from '../utils/formatters';
+import { formatBytes } from '../utils/formatters';
 import { 
   WifiIcon, 
   InformationCircleIcon 
@@ -109,12 +109,12 @@ const RTMPConnectionsPage: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">{conn.path}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span>Sent: {conn.bytesSent} B</span>
-                        <span>Received: {conn.bytesReceived} B</span>
-                      </div>
-                    </td>
+                     <td className="px-6 py-4">
+                       <div className="flex flex-col">
+                         <span>Sent: {formatBytes(conn.bytesSent)}</span>
+                         <span>Received: {formatBytes(conn.bytesReceived)}</span>
+                       </div>
+                     </td>
                     <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
                       {conn.query || 'N/A'}
                     </td>
@@ -138,14 +138,14 @@ const RTMPConnectionsPage: React.FC = () => {
               label: 'Publishing Connections', 
               value: connections.filter(c => c.state === 'publish').length 
             },
-            { 
-              label: 'Total Bytes Sent', 
-              value: connections.reduce((sum, c) => sum + c.bytesSent, 0) 
-            },
-            { 
-              label: 'Total Bytes Received', 
-              value: connections.reduce((sum, c) => sum + c.bytesReceived, 0) 
-            }
+             { 
+               label: 'Total Bytes Sent', 
+               value: formatBytes(connections.reduce((sum, c) => sum + c.bytesSent, 0)) 
+             },
+             { 
+               label: 'Total Bytes Received', 
+               value: formatBytes(connections.reduce((sum, c) => sum + c.bytesReceived, 0)) 
+             }
           ].map(({ label, value }) => (
             <div 
               key={label}

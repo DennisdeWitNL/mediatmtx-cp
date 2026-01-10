@@ -5,21 +5,91 @@ export interface ServerInfo {
 }
 
 // Global Configuration Types
+export type AuthAction = 'publish' | 'read' | 'playback' | 'api' | 'metrics' | 'pprof';
+
+export interface AuthPermission {
+  action: AuthAction;
+  path?: string;
+}
+
+export interface AuthInternalUser {
+  user: string;
+  pass: string;
+  ips?: string[];
+  permissions: AuthPermission[];
+}
+
 export interface GlobalConfig {
-  logLevel?: string;
+  // Logging Configuration
+  logLevel?: 'info' | 'debug' | 'warn' | 'error';
   logDestinations?: string[];
   logStructured?: boolean;
-  
-  // Add more fields from the OpenAPI specification as needed
+  logFile?: string;
+  sysLogPrefix?: string;
+
+  // Performance and Timeout Configuration
+  readTimeout?: string;
+  writeTimeout?: string;
+  writeQueueSize?: number;
+  udpMaxPayloadSize?: number;
+  udpReadBufferSize?: number;
+
+  // API Configuration
   api?: boolean;
   apiAddress?: string;
   apiEncryption?: boolean;
-  
+  apiAllowOrigins?: string[];
+
+  // Authentication Configuration
+  authMethod?: 'internal' | 'http' | 'jwt';
+  authInternalUsers?: AuthInternalUser[];
+  authHTTPAddress?: string;
+  authHTTPExclude?: AuthPermission[];
+  authJWTJWKS?: string;
+  authJWTClaimKey?: string;
+  authJWTInHTTPQuery?: boolean;
+
   // Protocol-specific configurations
+  // RTSP Configuration
   rtsp?: boolean;
+  rtspAddress?: string;
+  rtspEncryption?: 'no' | 'tls'; 
+  rtspsAddress?: string;
+  rtspTransports?: ('multicast' | 'tcp' | 'udp')[];
+
+  // RTMP Configuration
   rtmp?: boolean;
+  rtmpAddress?: string;
+  rtmpEncryption?: 'no' | 'tls';
+  rtmpsAddress?: string;
+
+  // HLS Configuration
   hls?: boolean;
+  hlsAddress?: string;
+  hlsEncryption?: boolean;
+  hlsVariant?: 'lowLatency' | 'standard';
+  hlsSegmentCount?: number;
+  hlsSegmentDuration?: string;
+  hlsAlwaysRemux?: boolean;
+
+  // WebRTC Configuration
   webrtc?: boolean;
+  webrtcAddress?: string;
+  webrtcEncryption?: boolean;
+  webrtcHandshakeTimeout?: string;
+  webrtcTrackGatherTimeout?: string;
+  webrtcLocalUDPAddress?: string;
+  webrtcIPsFromInterfaces?: boolean;
+  webrtcAdditionalHosts?: string[];
+
+  // SRT Configuration
+  srt?: boolean;
+  srtAddress?: string;
+
+  // Record and Hook Configurations
+  runOnConnect?: string;
+  runOnDisconnect?: string;
+  runOnConnectRestart?: boolean;
 }
 
 // Path Configuration Type

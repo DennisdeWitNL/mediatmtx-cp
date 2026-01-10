@@ -3,8 +3,8 @@ import { useTheme } from '../context/ThemeContext';
 import { MediaMTXAPI } from '../services/mediamtx-api';
 import { HLSMuxer } from '../types/mediamtx-types';
 import { handleApiError, getUserFriendlyErrorMessage } from '../utils/error-handler';
-import { formatDate, getTimeSince } from '../utils/date';
-import { formatBytes } from '../utils/format';
+import { formatDate, getTimeSince } from '../utils/formatters';
+import { formatBytes } from '../utils/formatters';
 import { 
   DesktopComputerIcon, 
   InformationCircleIcon,
@@ -131,9 +131,9 @@ const HLSMuxersPage: React.FC = () => {
                      <td className="px-6 py-4">
                        {muxer.lastRequest ? formatDate(muxer.lastRequest) : 'N/A'}
                      </td>
-                    <td className="px-6 py-4">
-                      {muxer.bytesSent} B
-                    </td>
+                     <td className="px-6 py-4">
+                       {formatBytes(muxer.bytesSent)}
+                     </td>
                   </tr>
                 ))}
               </tbody>
@@ -150,16 +150,16 @@ const HLSMuxersPage: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total Muxers', value: muxers.length },
-            { 
-              label: 'Total Bytes Sent', 
-              value: muxers.reduce((sum, m) => sum + m.bytesSent, 0) + ' B'
-            },
-            { 
-              label: 'Avg Bytes Sent per Muxer', 
-              value: muxers.length > 0 
-                ? Math.round(muxers.reduce((sum, m) => sum + m.bytesSent, 0) / muxers.length) + ' B'
-                : '0 B'
-            },
+             { 
+               label: 'Total Bytes Sent', 
+               value: formatBytes(muxers.reduce((sum, m) => sum + m.bytesSent, 0))
+             },
+             { 
+               label: 'Avg Bytes Sent per Muxer', 
+               value: muxers.length > 0 
+                 ? formatBytes(Math.round(muxers.reduce((sum, m) => sum + m.bytesSent, 0) / muxers.length))
+                 : formatBytes(0)
+             },
 { 
                 label: 'Most Recently Accessed Muxer', 
                 value: muxers.length > 0 

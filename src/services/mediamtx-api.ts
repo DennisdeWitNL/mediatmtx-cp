@@ -1,5 +1,9 @@
 import axios from 'axios';
-import { PathConfigList, PathConfig } from '../types/mediamtx-types';
+import { 
+  PathConfigList, 
+  PathConfig, 
+  GlobalConfig 
+} from '../types/mediamtx-types';
 
 // Centralized API service for MediaMTX
 export class MediaMTXAPI {
@@ -45,12 +49,12 @@ export class MediaMTXAPI {
     return this.get('/info');
   }
 
-  async getGlobalConfig() {
-    return this.get('/config/global/get');
+  async getGlobalConfig(): Promise<GlobalConfig> {
+    return this.get<GlobalConfig>('/config/global/get');
   }
 
-  async updateGlobalConfig(config: any) {
-    return this.patch('/config/global/patch', config);
+  async updateGlobalConfig(config: GlobalConfig): Promise<{ status: 'ok' | 'error' }> {
+    return this.patch<{ status: 'ok' | 'error' }>('/config/global/patch', config);
   }
 
   // Paths

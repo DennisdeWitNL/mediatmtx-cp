@@ -21,22 +21,26 @@ const App: React.FC = () => {
         <div className="flex min-h-screen bg-gray-50 dark:bg-gray-900">
           <Sidebar />
           
-          {/* Main content area with left padding to account for sidebar */}
-          <main className="flex-1 ml-64 p-6 overflow-y-auto">
-            <div className="max-w-6xl mx-auto">
-              <Routes>
-                <Route path="/" element={<ServerInfoPage />} />
-                <Route path="/global-config" element={<GlobalConfigPage />} />
-                <Route path="/path-config" element={<PathConfigPage />} />
-                <Route path="/rtsp-sessions" element={<RTSPSessionsPage />} />
-                <Route path="/rtmp-connections" element={<RTMPConnectionsPage />} />
-                <Route path="/webrtc-sessions" element={<WebRTCSessionsPage />} />
-                <Route path="/srt-connections" element={<SRTConnectionsPage />} />
-                <Route path="/hls-muxers" element={<HLSMuxersPage />} />
-                <Route path="/settings" element={<PanelSettingsPage />} />
-              </Routes>
-            </div>
-          </main>
+           {/* Main content area with left padding to account for sidebar */}
+             <main className="flex-1 md:ml-64 p-4 md:p-6 overflow-y-auto">
+               <div className="md:hidden">
+                 <Sidebar />
+               </div>
+               <div className="md:hidden h-[60px]"></div>
+               <div className="flex-1 max-w-6xl mx-auto">
+                 <Routes>
+                   <Route path="/" element={<ServerInfoPage />} />
+                   <Route path="/global-config" element={<GlobalConfigPage />} />
+                   <Route path="/path-config" element={<PathConfigPage />} />
+                   <Route path="/rtsp-sessions" element={<RTSPSessionsPage />} />
+                   <Route path="/rtmp-connections" element={<RTMPConnectionsPage />} />
+                   <Route path="/webrtc-sessions" element={<WebRTCSessionsPage />} />
+                   <Route path="/srt-connections" element={<SRTConnectionsPage />} />
+                   <Route path="/hls-muxers" element={<HLSMuxersPage />} />
+                   <Route path="/settings" element={<PanelSettingsPage />} />
+                 </Routes>
+               </div>
+             </main>
         </div>
       </Router>
     </ThemeProvider>

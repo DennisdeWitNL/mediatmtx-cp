@@ -175,106 +175,108 @@ const GlobalConfigPage: React.FC = () => {
    ) => {
     const Icon = icon;
     return (
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 sm:p-6 mb-6 overflow-x-auto">
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
           <Icon className="w-6 h-6 mr-2 text-blue-500" />
           {title}
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 space-y-4 md:space-y-0 w-full">
           {fields.map(({ key, label, type, options }) => (
-            <div key={key} className="flex items-center justify-between">
-              <label className="text-gray-700 dark:text-gray-300">{label}</label>
-               {type === 'boolean' ? (
-                 <label className="flex items-center cursor-pointer">
-                   <div className="relative">
-                     <input
-                       type="checkbox"
-                       className="sr-only"
-                       checked={!!editedConfig[key]}
-                       onChange={() => setEditedConfig(prev => ({
-                         ...prev,
-                         [key]: !prev[key]
-                       }))}
-                     />
-                     <div className={`
-                       w-10 h-4 
-                       ${editedConfig[key] ? 'bg-blue-500' : 'bg-gray-300'}
-                       rounded-full 
-                       shadow-inner 
-                       transition-colors
-                     `}></div>
-                     <div className={`
-                       dot absolute 
-                       -left-1 -top-1 
-                       bg-white 
-                       w-6 h-6 
-                       rounded-full 
-                       shadow 
-                       transition-transform
-                       ${editedConfig[key] ? 'translate-x-full' : 'translate-x-0'}
-                     `}></div>
-                   </div>
-                 </label>
-               ) : type === 'select' ? (
-                 <select
-                   value={editedConfig[key] as string || ''}
-                   onChange={(e) => setEditedConfig(prev => ({
-                     ...prev,
-                     [key]: e.target.value
-                   }))}
-                   className="
-                     ml-4 
-                     px-2 
-                     py-1 
-                     border 
-                     rounded 
-                     bg-gray-100 
-                     dark:bg-gray-700 
-                     dark:border-gray-600 
-                     text-gray-800 
-                     dark:text-gray-200
-                   "
-                 >
-                   {options?.map(option => (
-                     <option key={option} value={option}>{option}</option>
-                   ))}
-                 </select>
-               ) : (
-                 <input
-                   type="text"
-                   value={(() => {
-                     const currentField = fields.find(f => f.key === key);
-                     if (currentField && (currentField as any).render) {
-                       return (currentField as any).render(editedConfig[key]);
-                     }
-                     return editedConfig[key] as string || '';
-                   })()}
-                   onChange={(e) => setEditedConfig(prev => {
-                     const currentField = fields.find(f => f.key === key);
-                     const rawValue = e.target.value;
-                     const processedValue = currentField && (currentField as any).parse 
-                       ? (currentField as any).parse(rawValue)
-                       : rawValue;
-                     
-                     return {
-                       ...prev,
-                       [key]: processedValue
-                     };
-                   })}
-                   className="
-                     ml-4 
-                     px-2 
-                     py-1 
-                     border 
-                     rounded 
-                     bg-gray-100 
-                     dark:bg-gray-700 
-                     dark:border-gray-600 
-                     text-gray-800 
-                     dark:text-gray-200
-                   "
-                 />
-               )}
+            <div key={key} className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
+              <label className="text-gray-700 dark:text-gray-300 md:mr-4 w-full md:w-1/3">{label}</label>
+              <div className="w-full md:w-2/3">
+                {type === 'boolean' ? (
+                  <label className="flex items-center cursor-pointer">
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={!!editedConfig[key]}
+                        onChange={() => setEditedConfig(prev => ({
+                          ...prev,
+                          [key]: !prev[key]
+                        }))}
+                      />
+                      <div className={`
+                        w-10 h-4 
+                        ${editedConfig[key] ? 'bg-blue-500' : 'bg-gray-300'}
+                        rounded-full 
+                        shadow-inner 
+                        transition-colors
+                      `}></div>
+                      <div className={`
+                        dot absolute 
+                        -left-1 -top-1 
+                        bg-white 
+                        w-6 h-6 
+                        rounded-full 
+                        shadow 
+                        transition-transform
+                        ${editedConfig[key] ? 'translate-x-full' : 'translate-x-0'}
+                      `}></div>
+                    </div>
+                  </label>
+                ) : type === 'select' ? (
+                  <select
+                    value={editedConfig[key] as string || ''}
+                    onChange={(e) => setEditedConfig(prev => ({
+                      ...prev,
+                      [key]: e.target.value
+                    }))}
+                    className="
+                      w-full
+                      px-2 
+                      py-1 
+                      border 
+                      rounded 
+                      bg-gray-100 
+                      dark:bg-gray-700 
+                      dark:border-gray-600 
+                      text-gray-800 
+                      dark:text-gray-200
+                    "
+                  >
+                    {options?.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={(() => {
+                      const currentField = fields.find(f => f.key === key);
+                      if (currentField && (currentField as any).render) {
+                        return (currentField as any).render(editedConfig[key]);
+                      }
+                      return editedConfig[key] as string || '';
+                    })()}
+                    onChange={(e) => setEditedConfig(prev => {
+                      const currentField = fields.find(f => f.key === key);
+                      const rawValue = e.target.value;
+                      const processedValue = currentField && (currentField as any).parse 
+                        ? (currentField as any).parse(rawValue)
+                        : rawValue;
+                      
+                      return {
+                        ...prev,
+                        [key]: processedValue
+                      };
+                    })}
+                    className="
+                      w-full
+                      px-2 
+                      py-1 
+                      border 
+                      rounded 
+                      bg-gray-100 
+                      dark:bg-gray-700 
+                      dark:border-gray-600 
+                      text-gray-800 
+                      dark:text-gray-200
+                    "
+                  />
+                )}
+              </div>
             </div>
           ))}
         </div>

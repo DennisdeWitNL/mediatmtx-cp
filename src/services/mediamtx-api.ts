@@ -83,6 +83,26 @@ export class MediaMTXAPI {
     return this.delete(`/config/paths/delete/${name}`);
   }
 
+  // Reload global configuration
+  async reloadConfiguration() {
+    const currentConfig = await this.getGlobalConfig();
+    return this.updateGlobalConfig(currentConfig);
+  }
+
+  // Check all connection types
+  async checkAllConnections() {
+    const connections = {
+      rtmpConnections: await this.getRTMPConnections(),
+      rtspConnections: await this.getRTSPConnections(),
+      rtspSessions: await this.getRTSPSessions(),
+      webrtcSessions: await this.getWebRTCSessions(),
+      srtConnections: await this.getSRTConnections(),
+      hlsMuxers: await this.getHLSMuxers()
+    };
+
+    return connections;
+  }
+
   // RTMP Connections
   async getRTMPConnections(page = 0, itemsPerPage = 100) {
     return this.get('/rtmpconns/list', { page, itemsPerPage });

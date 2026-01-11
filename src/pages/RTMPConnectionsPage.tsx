@@ -1,42 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { MediaMTXAPI } from '../services/mediamtx-api';
-import { RTMPConnection } from '../types/mediamtx-types';
-import { handleApiError, getUserFriendlyErrorMessage } from '../utils/error-handler';
-import { formatDate, getTimeSince } from '../utils/formatters';
+import { RTMPConnection, RTMPConnectionList } from '../types/mediamtx-types';
+import { formatDate } from '../utils/formatters';
 import { formatBytes } from '../utils/formatters';
 import { 
   WifiIcon, 
   InformationCircleIcon 
 } from '@heroicons/react/outline';
+import { useMediaMTXData } from '../hooks/useMediaMTXData';
+
+interface RTMPStats {
+  total: number;
+  publishingConnections: number;
+  totalBytesSent: string;
+  totalBytesReceived: string;
+}
 
 const RTMPConnectionsPage: React.FC = () => {
-  const [connections, setConnections] = useState<RTMPConnection[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { apiUrl } = useTheme();
 
-  useEffect(() => {
-    const fetchRTMPConnections = async () => {
-      try {
-        setLoading(true);
-        const api = new MediaMTXAPI(apiUrl);
-        const connectionList = await api.getRTMPConnections();
-        setConnections((connectionList as any).items || []);
-        setLoading(false);
-      } catch (err) {
-        const apiError = handleApiError(err);
-        setError(getUserFriendlyErrorMessage(apiError));
-        setLoading(false);
-      }
-    };
+  // Fetch function specific to RTMP Connections
+  const fetchRTMPConnections = useCallback(async (apiUrl: string) => {
+    const api = new MediaMTXAPI(apiUrl);
+    const connectionList = await api.getRTMPConnections() as RTMPConnectionList;
+    return connectionList.items || [];
+  }, []);
 
-    fetchRTMPConnections();
-    
-    // Optional: Set up polling for live updates
-    const intervalId = setInterval(fetchRTMPConnections, 5000);
-    return () => clearInterval(intervalId);
-  }, [apiUrl]);
+  // Custom stats computation for RTMP Connections
+  const computeRTMPStats = useCallback((connections: RTMPConnection[]): RTMPStats => ({
+    total: connections.length,
+    publishingConnections: connections.filter(c => c.state === 'publish').length,
+    totalBytesSent: formatBytes(connections.reduce((sum, c) => sum + c.bytesSent, 0)),
+    totalBytesReceived: formatBytes(connections.reduce((sum, c) => sum + c.bytesReceived, 0))
+  }), []);
+
+  // Use the performance optimization hook
+  const { 
+    data: connections, 
+    loading, 
+    error, 
+    dataStats 
+  } = useMediaMTXData(fetchRTMPConnections, apiUrl, {
+    computeStats: computeRTMPStats
+  });
+
+  // Memoized Connection Row
+  // Separate component with proper memoization
+  const ConnectionRow = React.memo<{ conn: RTMPConnection }>(({ conn }) => (
+    <tr 
+      key={conn.id} 
+      className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+    >
+      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
+        {conn.id}
+      </td>
+      <td className="px-6 py-4">
+        {formatDate(conn.created)}
+      </td>
+      <td className="px-6 py-4">{conn.remoteAddr}</td>
+      <td className="px-6 py-4">
+        <span 
+          className={`
+            px-2 
+            py-1 
+            rounded 
+            text-xs 
+            font-semibold
+            ${conn.state === 'publish' 
+              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
+              : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'}
+          `}
+        >
+          {conn.state}
+        </span>
+      </td>
+      <td className="px-6 py-4">{conn.path}</td>
+      <td className="px-6 py-4">
+        <div className="flex flex-col">
+          <span>Sent: {formatBytes(conn.bytesSent)}</span>
+          <span>Received: {formatBytes(conn.bytesReceived)}</span>
+        </div>
+      </td>
+      <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
+        {conn.query || 'N/A'}
+      </td>
+    </tr>
+  ), (prevProps, nextProps) => 
+    prevProps.conn.id === nextProps.conn.id && 
+    JSON.stringify(prevProps.conn) === JSON.stringify(nextProps.conn)
+  );
 
   if (loading) {
     return (
@@ -81,44 +134,7 @@ const RTMPConnectionsPage: React.FC = () => {
               </thead>
               <tbody>
                 {connections.map((conn) => (
-                  <tr 
-                    key={conn.id} 
-                    className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                  >
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                      {conn.id}
-                    </td>
-                    <td className="px-6 py-4">
-                      {formatDate(conn.created)}
-                    </td>
-                    <td className="px-6 py-4">{conn.remoteAddr}</td>
-                    <td className="px-6 py-4">
-                      <span 
-                        className={`
-                          px-2 
-                          py-1 
-                          rounded 
-                          text-xs 
-                          font-semibold
-                          ${conn.state === 'publish' 
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' 
-                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'}
-                        `}
-                      >
-                        {conn.state}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">{conn.path}</td>
-                     <td className="px-6 py-4">
-                       <div className="flex flex-col">
-                         <span>Sent: {formatBytes(conn.bytesSent)}</span>
-                         <span>Received: {formatBytes(conn.bytesReceived)}</span>
-                       </div>
-                     </td>
-                    <td className="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
-                      {conn.query || 'N/A'}
-                    </td>
-                  </tr>
+                  <ConnectionRow key={conn.id} conn={conn} />
                 ))}
               </tbody>
             </table>
@@ -132,43 +148,38 @@ const RTMPConnectionsPage: React.FC = () => {
           Connection Statistics
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Total Connections', value: connections.length },
-            { 
-              label: 'Publishing Connections', 
-              value: connections.filter(c => c.state === 'publish').length 
-            },
-             { 
-               label: 'Total Bytes Sent', 
-               value: formatBytes(connections.reduce((sum, c) => sum + c.bytesSent, 0)) 
-             },
-             { 
-               label: 'Total Bytes Received', 
-               value: formatBytes(connections.reduce((sum, c) => sum + c.bytesReceived, 0)) 
-             }
-          ].map(({ label, value }) => (
-            <div 
-              key={label}
-              className="
-                bg-light-green 
-                dark:bg-dark-green/20 
-                p-4 
-                rounded-lg 
-                text-center
-              "
-            >
-              <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                {label}
-              </h3>
-              <p className="text-lg font-bold text-gray-800 dark:text-gray-200">
-                {value}
-              </p>
-            </div>
-          ))}
+          {(() => {
+            const stats = [
+              { label: 'Total Connections', value: (dataStats as RTMPStats).total },
+              { label: 'Publishing Connections', value: (dataStats as RTMPStats).publishingConnections },
+              { label: 'Total Bytes Sent', value: (dataStats as RTMPStats).totalBytesSent },
+              { label: 'Total Bytes Received', value: (dataStats as RTMPStats).totalBytesReceived }
+            ];
+
+            return stats.map(({ label, value }) => (
+              <div 
+                key={label}
+                className="
+                  bg-light-green 
+                  dark:bg-dark-green/20 
+                  p-4 
+                  rounded-lg 
+                  text-center
+                "
+              >
+                <h3 className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {label}
+                </h3>
+                <p className="text-lg font-bold text-gray-800 dark:text-gray-200">
+                  {value}
+                </p>
+              </div>
+            ));
+          })()}
         </div>
       </div>
     </div>
   );
 };
 
-export default RTMPConnectionsPage;
+export default React.memo(RTMPConnectionsPage);

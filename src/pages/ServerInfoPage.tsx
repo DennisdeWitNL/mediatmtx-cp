@@ -8,12 +8,13 @@ const ServerInfoPage: React.FC = () => {
   const [serverInfo, setServerInfo] = useState<ServerInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const { apiUrl } = useTheme();
+  const api = new MediaMTXAPI(apiUrl);
 
   useEffect(() => {
     const fetchServerInfo = async () => {
       try {
-        const api = new MediaMTXAPI(apiUrl);
         const info = await api.getServerInfo();
         const typedInfo = info as ServerInfo;
         setServerInfo(typedInfo);
@@ -26,6 +27,28 @@ const ServerInfoPage: React.FC = () => {
 
     fetchServerInfo();
   }, [apiUrl]);
+
+  const handleQuickAction = async (action: string) => {
+    try {
+      switch (action) {
+        case 'Reload Configuration':
+          await api.reloadConfiguration();
+          setActionMessage('Configuration reloaded successfully');
+          break;
+        case 'Check Connections':
+          const connections = await api.checkAllConnections();
+          const totalConnections = Object.values(connections).reduce((total: number, conns: any) => {
+            return total + (Array.isArray(conns) ? conns.length : 0);
+          }, 0);
+          setActionMessage(`Total Connections: ${totalConnections}`);
+          break;
+        default:
+          setActionMessage('Action not implemented');
+      }
+    } catch (err) {
+      setActionMessage(`Error performing ${action}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -78,15 +101,23 @@ const ServerInfoPage: React.FC = () => {
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">
           Quick Actions
         </h2>
+        {actionMessage && (
+          <div className="mb-4 p-3 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg">
+            {actionMessage}
+          </div>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { name: 'Reload Configuration', color: 'blue' },
-            { name: 'Restart Server', color: 'red' },
             { name: 'Check Connections', color: 'green' },
-            { name: 'View Logs', color: 'purple' }
           ].map((action) => (
             <button 
               key={action.name}
+              onClick={() => {
+                if (action.name !== 'Restart Server' && action.name !== 'View Logs') {
+                  handleQuickAction(action.name);
+                }
+              }}
               className={`
                 bg-${action.color}-100 
                 dark:bg-${action.color}-900/20 
@@ -97,7 +128,9 @@ const ServerInfoPage: React.FC = () => {
                 hover:bg-${action.color}-200 
                 dark:hover:bg-${action.color}-800/30 
                 transition-colors
+                ${action.name === 'Restart Server' || action.name === 'View Logs' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
               `}
+              disabled={action.name === 'Restart Server' || action.name === 'View Logs'}
             >
               {action.name}
             </button>

@@ -38,7 +38,10 @@ export interface GlobalConfig {
   api?: boolean;
   apiAddress?: string;
   apiEncryption?: boolean;
+  apiServerKey?: string;
+  apiServerCert?: string;
   apiAllowOrigins?: string[];
+  apiTrustedProxies?: string[];
 
   // Authentication Configuration
   authMethod?: 'internal' | 'http' | 'jwt';
@@ -46,8 +49,19 @@ export interface GlobalConfig {
   authHTTPAddress?: string;
   authHTTPExclude?: AuthPermission[];
   authJWTJWKS?: string;
+  authJWTJWKSFingerprint?: string;
   authJWTClaimKey?: string;
+  authJWTExclude?: AuthPermission[];
   authJWTInHTTPQuery?: boolean;
+
+  // Metrics Configuration
+  metrics?: boolean;
+  metricsAddress?: string;
+  metricsEncryption?: boolean;
+  metricsServerKey?: string;
+  metricsServerCert?: string;
+  metricsAllowOrigins?: string[];
+  metricsTrustedProxies?: string[];
 
   // Protocol-specific configurations
   // RTSP Configuration
@@ -55,32 +69,56 @@ export interface GlobalConfig {
   rtspAddress?: string;
   rtspEncryption?: 'no' | 'tls'; 
   rtspsAddress?: string;
+  rtpAddress?: string;
+  rtcpAddress?: string;
+  rtspServerKey?: string;
+  rtspServerCert?: string;
   rtspTransports?: ('multicast' | 'tcp' | 'udp')[];
+  multicastIPRange?: string;
+  multicastRTPPort?: number;
+  multicastRTCPPort?: number;
 
   // RTMP Configuration
   rtmp?: boolean;
   rtmpAddress?: string;
   rtmpEncryption?: 'no' | 'tls';
   rtmpsAddress?: string;
+  rtmpServerKey?: string;
+  rtmpServerCert?: string;
 
   // HLS Configuration
   hls?: boolean;
   hlsAddress?: string;
   hlsEncryption?: boolean;
+  hlsServerKey?: string;
+  hlsServerCert?: string;
+  hlsAllowOrigins?: string[];
+  hlsTrustedProxies?: string[];
   hlsVariant?: 'lowLatency' | 'standard';
   hlsSegmentCount?: number;
   hlsSegmentDuration?: string;
+  hlsPartDuration?: string;
+  hlsSegmentMaxSize?: string;
+  hlsDirectory?: string;
+  hlsMuxerCloseAfter?: string;
   hlsAlwaysRemux?: boolean;
 
   // WebRTC Configuration
   webrtc?: boolean;
   webrtcAddress?: string;
   webrtcEncryption?: boolean;
+  webrtcServerKey?: string;
+  webrtcServerCert?: string;
+  webrtcAllowOrigins?: string[];
+  webrtcTrustedProxies?: string[];
+  webrtcLocalUDPAddress?: string;
+  webrtcLocalTCPAddress?: string;
+  webrtcIPsFromInterfaces?: boolean;
+  webrtcIPsFromInterfacesList?: string[];
+  webrtcAdditionalHosts?: string[];
   webrtcHandshakeTimeout?: string;
   webrtcTrackGatherTimeout?: string;
-  webrtcLocalUDPAddress?: string;
-  webrtcIPsFromInterfaces?: boolean;
-  webrtcAdditionalHosts?: string[];
+  webrtcSTUNGatherTimeout?: string;
 
   // SRT Configuration
   srt?: boolean;
